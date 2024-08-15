@@ -54,8 +54,8 @@ if (!is_dir(dirname($diffLogFile))) {
 file_put_contents($diffLogFile, $diff);
 
 
-// $targetBranchのソースツリーを取得
-$sourceTree = shell_exec("cd .. && tree -L 5 --charset=ascii");
+// $targetBranchのソースツリーを取得（vendor, node_modulesを除外）
+$sourceTree = shell_exec("cd .. && tree -L 5 -I 'vendor|node_modules' --charset=ascii");
 
 // ログファイルのパスを設定
 $logFile = __DIR__ . '/logs/pr_description.txt';
@@ -134,6 +134,12 @@ if (file_exists($contentLogFile)) {
     echo date('Y-m-d H:i:s') . " - エラー: \$contentのログファイルが作成されませんでした。\n";
 }
 
+// --dry-runオプションのチェック
+if (in_array('--dry-run', $argv)) {
+    echo date('Y-m-d H:i:s') . " - ドライランモードです。ここで処理を終了します。\n";
+    exit(0);
+}
+
 
 
 // リクエストボディの作成
@@ -147,6 +153,7 @@ $requestBody = [
         ]
     ]
 ];
+
 
 // cURLセッションの初期化
 $ch = curl_init($apiEndpoint);
